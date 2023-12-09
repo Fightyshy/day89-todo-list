@@ -1,0 +1,144 @@
+{% include "header.html" %}
+        <!-- Header end -->
+
+        <!-- Body start -->
+        <div class="d-flex flex-column flex-md-row p-4 gap-4 py-md-5 align-items-center justify-content-center">
+            {% if tasks is not none %}
+            <div class="list-group w-100">
+                {% for item in tasks.tasks: %}
+                <label class="list-group-item d-flex gap-3">
+                    <!-- TODO if to ajax to edit recived, turn form from viewing to form editting mode -->
+                    <input hidden="true" value="{{ item.id }}" id="task-id"/>
+                    {% if item.complete %}
+                    <input class="form-check-input flex-shrink-0" type="checkbox" style="font-size: 1.375em;" id="task-checkbox-{{item.id}}" name="task-checkbox-{{item.id}}" checked>
+                    {% else %}
+                    <input class="form-check-input flex-shrink-0" type="checkbox" style="font-size: 1.375em;" id="task-checkbox-{{item.id}}" name="task-checkbox-{{item.id}}">
+                    {% endif %}
+                    <div class="d-flex gap-2 w-100 justify-content-md-between">
+                        <div>
+                            <div id="name">
+                                <h2 id="task-name-{{item.id}}" contenteditable="true" class="mb-0">{{ item.name }}</h2>
+                            </div>
+                            <div id="notes">
+                                <h6 id="task-notes-{{item.id}}" class="mb-0 opacity-75 w-75 text-wrap" contenteditable="true">{{ item.notes }}</h6>
+                            </div>
+                            <!-- <div class="d-flex flex-row w-100"> -->
+                                
+                            <!-- </div> -->  
+                        </div>
+                        <div>
+                            Date Set: <input type="date" class="form-control" value="{{item.date_set}}" disabled>
+                            Date Due: <input id="task-date-due-{{item.id}}" type="date" class="form-control" value="{{item.date_due}}">
+                        </div>
+                        <small class="opacity-50 text-nowrap">
+                            <button id="edit-{{item.id}}"  class="btn btn-primary ml-4">Save</button>
+                            <a href="{{ url_for('delete_task', task_id=tasks.id, list_id=tasks.listId) }}" class="btn btn-primary">Delete</a>
+                        </small>
+                    </div>
+                    
+                    <script type="text/javascript">
+                        $(document).ready(function() {
+                            $("#task-checkbox-{{item.id}}").change(function(event) {
+                                if(this.checked){
+                                    $.ajax({
+                                        data:{
+                                            checked: true,
+                                            taskid: $("#task-id").val()
+                                        },
+                                        type: "POST",
+                                        url:"/{{tasks.listId}}"
+                                    }).done(function(data){
+                                        $("#test").text("Box checked").show()
+                                    })
+                                    event.preventDefault()
+                                }else{
+                                    $.ajax({
+                                        data:{
+                                            checked: false,
+                                            taskid: $("#item-id").val()
+                                        },
+                                        type: "POST",
+                                        url:"/{{tasks.listId}}"
+                                    }).done(function(data){
+                                        $("#test").text("Box unchecked").show()
+                                    })
+                                    event.preventDefault()
+                                }
+                            })
+                        })
+                        
+                        // Edit contents
+                        $(document).ready(function() {
+                            $("#edit-{{item.id}}").click(function(event){
+                                console.log("{{item.id}}")
+                                $.ajax({
+                                    data:{
+                                        id: "{{item.id}}",
+                                        name: $("#task-name-{{item.id}}").text(),
+                                        notes: $("#task-notes-{{item.id}}").text(),
+                                        datedue: $("#task-date-due-{{item.id}}").val()
+                                    },
+                                    type: "POST",
+                                    url: "/task/{{item.id}}"
+                                }).done(function(data){
+                                    $("#task-name-{{item.id}}").text(data.name),
+                                    $("task-notes-{{item.id}}").text(data.notes),
+                                    $("task-date-due-{{item.id}}").val(data.datedue)
+                                })
+                                event.preventDefault()
+                            })
+                        })
+
+                        // function nameSwitch(e){
+                        //     let txt = e.innerText;
+                        //     let element = document.getElementById("name")
+                        //     element.innerText = `<textarea onblur="resetField(this)" value='${txt}'/>`
+                        // }
+
+                        // function resetNameField(e){
+                        //     let txt = e.value
+                        //     let element = document.getElementById("name")
+
+                        //     element.innerHTML = `<h2 id="task-name-{{item.id}}" onclick="nameSwitch(this)" class="mb-0">{{ item.name }}</h2>`
+                        // }
+                    </script>
+                </label>
+                {% endfor %}
+                {% endif %}
+                <!-- Form here, set id for ajax -->
+                <div class="list-group-item d-flex gap-3 bg-body-tertiary">
+                    <form action="{{ url_for('add_task') }}" method="post" class="row row-cols-lg-auto g-3 align-items-center">
+                        <div class="col-12">
+                            {{ form.name.label(class="visually-hidden", for="name") }}
+                            <div class="input-group">
+                                {{ form.name(class="form-control", placeholder="Add a new task...") }}
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            {{ form.date_due.label(class="visually-hidden", for="date_due") }}
+                            <div class="input-group">
+                                {{ form.date_due(class="form-control") }}
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            {{ form.notes.label(class="visually-hidden", for="notes") }}
+                            <div class="input-group">
+                                {{ form.notes(class="form-control", placeholder="Add extra notes...") }}
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- Body end -->
+
+        <!-- Footer-->
+        {% include "footer.html" %}
+    </body>
+</html>
