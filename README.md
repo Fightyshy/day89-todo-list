@@ -1,4 +1,4 @@
-# day88-todo-list
+# day89-todo-list
 A website showcasing a simple, barebones (and most likely buggy) to-do list website using Flask, and a bit of jQuery for AJAX.
 Done as part of the 100 Days of Code: The Complete Python Pro Bootcamp for 2023 course, [link here](https://www.udemy.com/course/100-days-of-code/learn/practice/1251204#overview)
 
