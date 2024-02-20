@@ -1,4 +1,5 @@
 from typing import List
+from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Integer, String, Date, Boolean
 from sqlalchemy.sql import func

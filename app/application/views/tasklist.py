@@ -1,8 +1,8 @@
 from flask import Blueprint, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
-from app.application.objects.helpers import generate_list_id
-from models.models import Task, TaskList, db
-from objects.forms import Checkbox, Todo
+from ..objects.helpers import generate_list_id
+from ..models.models import Task, TaskList, db
+from ..objects.forms import Checkbox, Todo
 import datetime as dt
 
 tasklist = Blueprint("tasklist", __name__, template_folder="templates")

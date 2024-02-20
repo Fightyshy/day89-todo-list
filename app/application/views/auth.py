@@ -1,10 +1,10 @@
 from flask import Blueprint, app, flash, redirect, render_template, request, url_for
 from flask_login import LoginManager, current_user
 from sqlalchemy import and_
-from models.models import TaskList, User, db
-from objects.forms import Login, Register
 from werkzeug.security import generate_password_hash, check_password_hash
-from objects.helpers import generate_list_id
+from ..models.models import TaskList, User, db
+from ..objects.forms import Login, Register
+from ..objects.helpers import generate_list_id
 
 
 # Blueprint config
