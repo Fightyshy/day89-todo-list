@@ -108,6 +108,7 @@
                 <!-- Form here, set id for ajax -->
                 <div class="list-group-item d-flex gap-3 bg-body-tertiary">
                     <form action="{{ url_for('tasklist.add_task') }}" method="post" class="row row-cols-lg-auto g-3 align-items-center">
+                        {{ form.csrf_token }}
                         <div class="col-12">
                             {{ form.name.label(class="visually-hidden", for="name") }}
                             <div class="input-group">

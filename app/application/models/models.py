@@ -1,7 +1,7 @@
 from typing import List
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Integer, String, Date, Boolean
+from sqlalchemy import Integer, String, Date, Boolean, DateTime
 from sqlalchemy.sql import func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey
@@ -34,11 +34,11 @@ class Task(db.Model):
     __tablename__ = "task"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[int] = mapped_column(String(length=20), nullable=False)
-    date_set: Mapped[dt.datetime] = mapped_column(Date(), default=dt.datetime.now().date())# TODO fully adapt for Date ONLY
-    date_due: Mapped[dt.datetime] = mapped_column(Date())
+    date_set: Mapped[dt.datetime] = mapped_column(DateTime(), default=dt.datetime.now().replace(microsecond=0))
+    date_due: Mapped[dt.datetime] = mapped_column(DateTime())
     # category: Mapped[str] = mapped_column(String) Removed due to limitations, for future extension if we can get sorting/filtering in html working using flask
     notes: Mapped[str] = mapped_column(String)
-    complete: Mapped[bool] = mapped_column(Boolean)
+    complete: Mapped[bool] = mapped_column(Boolean, default=False)
 
     tasklist_id: Mapped[int] = mapped_column(ForeignKey("tasklist.id"))
     tasklist: Mapped["TaskList"] = relationship(back_populates="tasks")
