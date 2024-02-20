@@ -5,7 +5,7 @@
         {% with messages = get_flashed_messages() %}
             <p class="flash text-danger">{{ messages[0] }}</p>
         {% endwith %}
-        <form class="needs-validation" novalidate action="{{ url_for('register') }}" method="post">
+        <form class="needs-validation" novalidate action="{{ url_for('auth.register_user') }}" method="post">
             {{ form.csrf_token }}
             <h1 class="h3 mb-3 fw-normal">Register</h1>
 

@@ -32,7 +32,7 @@
                         </div>
                         <small class="opacity-50 text-nowrap">
                             <button id="edit-{{item.id}}"  class="btn btn-primary ml-4">Save</button>
-                            <a href="{{ url_for('delete_task', task_id=tasks.id, list_id=tasks.listId) }}" class="btn btn-primary">Delete</a>
+                            <a href="{{ url_for('tasklist.delete_task', task_id=tasks.id, list_id=tasks.listId) }}" class="btn btn-primary">Delete</a>
                         </small>
                     </div>
                     
@@ -107,7 +107,7 @@
                 {% endif %}
                 <!-- Form here, set id for ajax -->
                 <div class="list-group-item d-flex gap-3 bg-body-tertiary">
-                    <form action="{{ url_for('add_task') }}" method="post" class="row row-cols-lg-auto g-3 align-items-center">
+                    <form action="{{ url_for('tasklist.add_task') }}" method="post" class="row row-cols-lg-auto g-3 align-items-center">
                         <div class="col-12">
                             {{ form.name.label(class="visually-hidden", for="name") }}
                             <div class="input-group">
@@ -139,6 +139,5 @@
         <!-- Body end -->
 
         <!-- Footer-->
-        {% include "footer.html" %}
     </body>
 </html>
