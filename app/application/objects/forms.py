@@ -10,6 +10,7 @@ class Checkbox(FlaskForm):
 #     category = StringField(label="Name", validators=[DataRequired()])
 #     submit = SubmitField(label="Add category")
 
+
 class Todo(FlaskForm):
     name = StringField(label="Name", validators=[DataRequired(message="Please actually enter a name"), Length(max=20, message="Please keep the name to 20 characters or less")])
     date_due = DateField(label="Date due", format="%Y-%m-%d", validators=[DataRequired(message="Please enter a time to complete the task by")])
@@ -21,10 +22,12 @@ class Todo(FlaskForm):
         if field.data < dt.datetime.now().strftime("%Y-%m-%d"):
             raise ValidationError("Date due must not be before today")
 
+
 class Login(FlaskForm):
-    email = EmailField(label="Email", validators=[DataRequired(), Email()])
-    password = PasswordField(label="Password", validators=[DataRequired()])
+    email = EmailField(label="Email", validators=[DataRequired(message="You need to enter your email address"), Email(message="Invalid email address")])
+    password = PasswordField(label="Password", validators=[DataRequired(message="You need to enter a password")])
     submit = SubmitField(label="Login")
+
 
 class Register(FlaskForm):
     username = StringField(label="Username", validators=[DataRequired()])
@@ -32,3 +35,7 @@ class Register(FlaskForm):
     password = PasswordField(label="Password", validators=[DataRequired()])
     repeat_pw = PasswordField(label="Repeat Password", validators=[DataRequired()])
     submit = SubmitField(label="Signup")
+
+    def validate_repeat_pw(self, field):
+        if self.password.data != field.data:
+            raise ValidationError("Passwords do not match")

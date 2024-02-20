@@ -82,8 +82,8 @@
                                     url: "/task/{{item.id}}"
                                 }).done(function(data){
                                     $("#task-name-{{item.id}}").text(data.name),
-                                    $("task-notes-{{item.id}}").text(data.notes),
-                                    $("task-date-due-{{item.id}}").val(data.datedue)
+                                    $("#task-notes-{{item.id}}").text(data.notes),
+                                    $("#task-date-due-{{item.id}}").val(data.datedue)
                                 })
                                 event.preventDefault()
                             })
