@@ -32,7 +32,7 @@
                         </div>
                         <small class="opacity-50 text-nowrap">
                             <button id="edit-{{item.id}}"  class="btn btn-primary ml-4">Save</button>
-                            <a href="{{ url_for('tasklist.delete_task', task_id=tasks.id, list_id=tasks.listId) }}" class="btn btn-primary">Delete</a>
+                            <a href="{{ url_for('tasklist.delete_task', list_id=tasks.listId, task_id=item.id) }}" class="btn btn-primary">Delete</a>
                         </small>
                     </div>
                     
