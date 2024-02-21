@@ -1,6 +1,6 @@
 {% include "header.html" %}
         <!-- Header end -->
-
+        {% from 'bootstrap5/form.html' import render_form %}
         <!-- Body start -->
         <div class="d-flex flex-column flex-md-row p-4 gap-4 py-md-5 align-items-center justify-content-center">
             {% if tasks is not none %}
@@ -27,8 +27,8 @@
                             <!-- </div> -->  
                         </div>
                         <div>
-                            Date Set: <input type="date" class="form-control" value="{{item.date_set}}" disabled>
-                            Date Due: <input id="task-date-due-{{item.id}}" type="date" class="form-control" value="{{item.date_due}}">
+                            Date Set: <input type="datetime-local" class="form-control" value="{{item.date_set}}" disabled>
+                            Date Due: <input id="task-date-due-{{item.id}}" type="datetime-local" class="form-control" value="{{item.date_due}}">
                         </div>
                         <small class="opacity-50 text-nowrap">
                             <button id="edit-{{item.id}}"  class="btn btn-primary ml-4">Save</button>
@@ -36,6 +36,8 @@
                         </small>
                     </div>
                     
+                    <!-- TODO change edit to convert text to form field and back -->
+                    <!-- TODO Update AJAX, send serialised form -->
                     <script type="text/javascript">
                         $(document).ready(function() {
                             $("#task-checkbox-{{item.id}}").change(function(event) {
@@ -88,52 +90,13 @@
                                 event.preventDefault()
                             })
                         })
-
-                        // function nameSwitch(e){
-                        //     let txt = e.innerText;
-                        //     let element = document.getElementById("name")
-                        //     element.innerText = `<textarea onblur="resetField(this)" value='${txt}'/>`
-                        // }
-
-                        // function resetNameField(e){
-                        //     let txt = e.value
-                        //     let element = document.getElementById("name")
-
-                        //     element.innerHTML = `<h2 id="task-name-{{item.id}}" onclick="nameSwitch(this)" class="mb-0">{{ item.name }}</h2>`
-                        // }
                     </script>
                 </label>
                 {% endfor %}
                 {% endif %}
                 <!-- Form here, set id for ajax -->
                 <div class="list-group-item d-flex gap-3 bg-body-tertiary">
-                    <form action="{{ url_for('tasklist.add_task') }}" method="post" class="row row-cols-lg-auto g-3 align-items-center">
-                        {{ form.csrf_token }}
-                        <div class="col-12">
-                            {{ form.name.label(class="visually-hidden", for="name") }}
-                            <div class="input-group">
-                                {{ form.name(class="form-control", placeholder="Add a new task...") }}
-                            </div>
-                        </div>
-
-                        <div class="col-12">
-                            {{ form.date_due.label(class="visually-hidden", for="date_due") }}
-                            <div class="input-group">
-                                {{ form.date_due(class="form-control") }}
-                            </div>
-                        </div>
-
-                        <div class="col-12">
-                            {{ form.notes.label(class="visually-hidden", for="notes") }}
-                            <div class="input-group">
-                                {{ form.notes(class="form-control", placeholder="Add extra notes...") }}
-                            </div>
-                        </div>
-
-                        <div class="col-12">
-                        <button type="submit" class="btn btn-primary">Submit</button>
-                        </div>
-                    </form>
+                    {{ render_form(form, action=url_for('tasklist.add_task', list_id=list_id), form_type="inline", novalidate=True) }}
                 </div>
             </div>
         </div>
