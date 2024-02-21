@@ -22,9 +22,6 @@
                             <div id="notes">
                                 <h6 id="task-notes-{{item.id}}" class="mb-0 opacity-75 w-75 text-wrap" contenteditable="true">{{ item.notes }}</h6>
                             </div>
-                            <!-- <div class="d-flex flex-row w-100"> -->
-                                
-                            <!-- </div> -->  
                         </div>
                         <div>
                             Date Set: <input type="datetime-local" class="form-control" value="{{item.date_set}}" disabled>
@@ -40,56 +37,75 @@
                     <!-- TODO Update AJAX, send serialised form -->
                     <script type="text/javascript">
                         $(document).ready(function() {
-                            $("#task-checkbox-{{item.id}}").change(function(event) {
+
+                            $("#task-checkbox-{{item.id}}").change(function(event){
+                                event.preventDefault();
+                                data = {checked: false, taskid: $("#task-id").val()}
                                 if(this.checked){
-                                    $.ajax({
-                                        data:{
-                                            checked: true,
-                                            taskid: $("#task-id").val()
-                                        },
-                                        type: "POST",
-                                        url:"/{{tasks.listId}}"
-                                    }).done(function(data){
-                                        $("#test").text("Box checked").show()
-                                    })
-                                    event.preventDefault()
-                                }else{
-                                    $.ajax({
-                                        data:{
-                                            checked: false,
-                                            taskid: $("#item-id").val()
-                                        },
-                                        type: "POST",
-                                        url:"/{{tasks.listId}}"
-                                    }).done(function(data){
-                                        $("#test").text("Box unchecked").show()
-                                    })
-                                    event.preventDefault()
+                                    data["checked"]= true;
                                 }
-                            })
-                        })
-                        
-                        // Edit contents
-                        $(document).ready(function() {
-                            $("#edit-{{item.id}}").click(function(event){
-                                console.log("{{item.id}}")
+
                                 $.ajax({
-                                    data:{
-                                        id: "{{item.id}}",
-                                        name: $("#task-name-{{item.id}}").text(),
-                                        notes: $("#task-notes-{{item.id}}").text(),
-                                        datedue: $("#task-date-due-{{item.id}}").val()
-                                    },
+                                    data:JSON.stringify(data),
                                     type: "POST",
-                                    url: "/task/{{item.id}}"
-                                }).done(function(data){
-                                    $("#task-name-{{item.id}}").text(data.name),
-                                    $("#task-notes-{{item.id}}").text(data.notes),
-                                    $("#task-date-due-{{item.id}}").val(data.datedue)
+                                    contentType: "application/json",
+                                    url: "{{url_for('tasklist.set_task_check', list_id=tasks.listId, task_id=item.id)}}"
+                                }).done(function(data) {
+                                    $("#test").text("Box checked").show();
                                 })
-                                event.preventDefault()
                             })
-                        })
+                        });
+                        // $(document).ready(function() {
+                        //     $("#task-checkbox-{{item.id}}").change(function(event) {
+                        //         if(this.checked){
+                        //             $.ajax({
+                        //                 data:{
+                        //                     checked: true,
+                        //                     taskid: $("#task-id").val()
+                        //                 },
+                        //                 type: "POST",
+                        //                 url:"/{{tasks.listId}}"
+                        //             }).done(function(data){
+                        //                 $("#test").text("Box checked").show()
+                        //             })
+                        //             event.preventDefault()
+                        //         }else{
+                        //             $.ajax({
+                        //                 data:{
+                        //                     checked: false,
+                        //                     taskid: $("#item-id").val()
+                        //                 },
+                        //                 type: "POST",
+                        //                 url:"/{{tasks.listId}}"
+                        //             }).done(function(data){
+                        //                 $("#test").text("Box unchecked").show()
+                        //             })
+                        //             event.preventDefault()
+                        //         }
+                        //     })
+                        // })
+                        
+                        // // Edit contents
+                        // $(document).ready(function() {
+                        //     $("#edit-{{item.id}}").click(function(event){
+                        //         console.log("{{item.id}}")
+                        //         $.ajax({
+                        //             data:{
+                        //                 id: "{{item.id}}",
+                        //                 name: $("#task-name-{{item.id}}").text(),
+                        //                 notes: $("#task-notes-{{item.id}}").text(),
+                        //                 datedue: $("#task-date-due-{{item.id}}").val()
+                        //             },
+                        //             type: "POST",
+                        //             url: "/task/{{item.id}}"
+                        //         }).done(function(data){
+                        //             $("#task-name-{{item.id}}").text(data.name),
+                        //             $("#task-notes-{{item.id}}").text(data.notes),
+                        //             $("#task-date-due-{{item.id}}").val(data.datedue)
+                        //         })
+                        //         event.preventDefault()
+                        //     })
+                        // })
                     </script>
                 </label>
                 {% endfor %}

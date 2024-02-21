@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
+from sqlalchemy import and_
 from ..objects.helpers import generate_list_id
 from ..models.models import Task, TaskList, db
 from ..objects.forms import Checkbox, Todo
@@ -57,18 +58,28 @@ def add_task(list_id):
             return render_template("index.html", list_id=list_id, form=todoform, checkbox=checkbox, tasks=tasklist, current_user=current_user, errors=todoform.errors)
 
 
+@tasklist.route("/tasks/<list_id>/<int:task_id>/check", methods=["POST"])
+def set_task_check(list_id, task_id):
+    db.get_or_404(Task, task_id)
+    if request.method == "POST":
+        complete_state = request.get_json()
+        tasklist = db.session.execute(db.select(TaskList).where(TaskList.listId == list_id)).scalar()
+        task = db.session.execute(db.select(Task).where(and_(Task.tasklist == tasklist,
+                                                      Task.id == task_id))).scalar()
+        task.complete = complete_state.get("checked")
+        db.session.commit()
+        return ""
+
 # TODO fix
 @tasklist.route("/task/<int:task_id>", methods=["POST"])
 def edit_task(task_id):
     db.get_or_404(Task, task_id)
     if request.method == "POST":
-        print(request.form["name"])
         to_edit = db.get_or_404(Task, request.form["id"])
         to_edit.name = request.form["name"]
         to_edit.notes = request.form["notes"]
         to_edit.date_due = dt.datetime.strptime(request.form["datedue"], "%Y-%m-%d").date()
         db.session.commit()
-        print("Successful recieved")
         # Respond to ajax request
         # Ensure .done overrides once saved
         return jsonify({
