@@ -36,5 +36,14 @@
         </footer>
         <!-- Bootstrap core JS-->
         {{ bootstrap.load_js() }}
+        <!-- Custom js/jquery -->
+        <script type="text/javascript">
+            $(document).ready(function(){
+                console.log($(".check-state"))
+                $(".check-state").change(function(event){
+                    console.log("here")
+                });
+            });
+        </script>
     </body>
   </html>

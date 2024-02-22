@@ -11,33 +11,33 @@
                     <div class="row w-100">
                         <div class="col-md-auto my-auto mx-2">
                             {% if item.complete %}
-                            <input class="form-check-input border border-5 border-success" type="checkbox" style="width: 3.12rem; height: 3.12rem;" id="task-checkbox-{{item.id}}" name="task-checkbox-{{item.id}}" checked>
+                            <input class="form-check-input border border-5 border-success check-state" type="checkbox" style="width: 3.12rem; height: 3.12rem;" id="task-checkbox-{{tasks.listId}}-{{item.id}}" name="task-checkbox-{{item.id}}" checked>
                             {% else %}
-                            <input class="form-check-input border border-5 border-danger" type="checkbox" style="width: 3.12rem; height: 3.12rem;" id="task-checkbox-{{item.id}}" name="task-checkbox-{{item.id}}">
+                            <input class="form-check-input border border-5 border-danger check-state" type="checkbox" style="width: 3.12rem; height: 3.12rem;" id="task-checkbox-{{tasks.listId}}-{{item.id}}" name="task-checkbox-{{item.id}}">
                             {% endif %}
                         </div>
                         <input hidden="true" value="{{ item.id }}" id="task-id"/>
                         <div class="col-md-7">
                             <div class="row mb-2">
                                 <div class="col-md-auto px-0">
-                                    <span id="edit-task-name-{{item.id}}">📝</span>
-                                    <span id="confirm-edit-task-name-{{item.id}}" hidden>✅</span>
-                                    <span id="reject-edit-task-name-{{item.id}}" hidden>❌</span>
+                                    <span class="edit-name" id="edit-task-name-{{tasks.listId}}-{{item.id}}">📝</span>
+                                    <span class="confirm-name" id="confirm-edit-task-name-{{tasks.listId}}-{{item.id}}" hidden>✅</span>
+                                    <span class="cancel-name" id="reject-edit-task-name-{{tasks.listId}}-{{item.id}}" hidden>❌</span>
                                 </div>
                                 <div class="col-md-11">
-                                    <h2 id="task-name-{{item.id}}" class="mb-0">{{ item.name }}</h2>
-                                    <input id="task-name-field-{{item.id}}" type="text" class="form-control" maxlength="40" hidden/>
+                                    <h2 id="task-name-{{tasks.listId}}-{{item.id}}" class="mb-0">{{ item.name }}</h2>
+                                    <input id="task-name-field-{{tasks.listId}}-{{item.id}}" type="text" class="form-control" maxlength="40" style="display: none;"/>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-auto px-0">
-                                    <span id="edit-task-notes-{{item.id}}">📝</span>
-                                    <span id="confirm-edit-task-notes-{{item.id}}" hidden>✅</span>
-                                    <span id="reject-edit-task-notes-{{item.id}}" hidden>❌</span>
+                                    <span class="edit-notes" id="edit-task-notes-{{tasks.listId}}-{{item.id}}">📝</span>
+                                    <span class="confirm-notes" id="confirm-edit-task-notes-{{tasks.listId}}-{{item.id}}" hidden>✅</span>
+                                    <span class="cancel-notes" id="reject-edit-task-notes-{{tasks.listId}}-{{item.id}}" hidden>❌</span>
                                 </div>
                                 <div class="col-md-11">
-                                    <p id="task-notes-{{item.id}}" class="mb-0 opacity-75 text-wrap">{{ item.notes }}</p>
-                                    <textarea id="task-notes-field-{{item.id}}" class="form-control" style="resize: none;" maxlength="200" hidden></textarea>
+                                    <p id="task-notes-{{tasks.listId}}-{{item.id}}" class="mb-0 opacity-75 text-wrap">{{ item.notes }}</p>
+                                    <textarea id="task-notes-field-{{tasks.listId}}-{{item.id}}" class="form-control" style="resize: none; display: none;" maxlength="200"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -46,7 +46,7 @@
                                 Date Set: <input type="datetime-local" class="form-control" value="{{item.date_set}}" disabled>
                             </div>
                             <div class="row px-2">
-                                Date Due: <input id="task-date-due-{{item.id}}" type="datetime-local" class="form-control" value="{{item.date_due}}">
+                                Date Due: <input id="task-date-due-{{tasks.listId}}-{{item.id}}" type="datetime-local" class="form-control date-due-selector" value="{{item.date_due}}">
                             </div>
                         </div>
                         <div class="col-md-2 align-items-end">
@@ -54,146 +54,6 @@
                             <a href="{{ url_for('tasklist.delete_task', list_id=tasks.listId, task_id=item.id) }}" class="btn btn-primary">Delete</a>
                         </div>
                     </div>
-                    
-                    <!-- TODO change edit to convert text to form field and back -->
-                    <!-- TODO Update AJAX, send serialised form -->
-                    <script type="text/javascript">
-                        $(document).ready(function() {
-
-                            // Task complete state handler
-                            $("#task-checkbox-{{item.id}}").change(function(event){
-                                event.preventDefault();
-                                data = {checked: false, taskid: $("#task-id").val()}
-                                if(this.checked){
-                                    data["checked"]= true;
-                                }
-
-                                $.ajax({
-                                    data:JSON.stringify(data),
-                                    type: "POST",
-                                    contentType: "application/json",
-                                    url: "{{url_for('tasklist.set_task_check', list_id=tasks.listId, task_id=item.id)}}"
-                                }).done(function(data) {
-                                    if(data["checked"] === true){
-                                        $("#task-checkbox-{{item.id}}").addClass("border-success");
-                                        $("#task-checkbox-{{item.id}}").removeClass("border-danger");
-                                    }else{
-                                        $("#task-checkbox-{{item.id}}").removeClass("border-success");
-                                        $("#task-checkbox-{{item.id}}").addClass("border-danger");
-                                    }
-                                })
-                            });
-
-                            $("#edit-task-name-{{item.id}}").click(function(event){
-                                event.preventDefault();
-                                let taskName = $("#task-name-{{item.id}}");
-                                let taskNameField = $("#task-name-field-{{item.id}}");
-                                buttons = $(this).parent().children();
-                                $(buttons[0]).attr("hidden", true);
-                                $(buttons[1]).attr("hidden", false);
-                                $(buttons[2]).attr("hidden", false);
-                                $("#task-name-{{item.id}}").attr("hidden", true);
-                                taskNameField.val(taskName.text());
-                                taskNameField.attr("hidden", false);
-                            });
-
-                            // TODO handle empty string before ajax
-                            $("#confirm-edit-task-name-{{item.id}}").click(function(event){
-                                event.preventDefault();
-                                text = $("#task-name-field-{{item.id}}").val();
-                                $.ajax({
-                                    data: JSON.stringify({
-                                        name: text
-                                    }),
-                                    type: "PATCH",
-                                    url: "{{url_for('tasklist.edit_task_name', list_id=tasks.listId, task_id=item.id)}}",
-                                    contentType: "application/json"
-                                }).done(function(data){
-                                    buttons = $("#confirm-edit-task-name-{{item.id}}").parent().children();
-                                    $(buttons[0]).attr("hidden", false);
-                                    $(buttons[1]).attr("hidden", true);
-                                    $(buttons[2]).attr("hidden", true);
-                                    $("#task-name-{{item.id}}").attr("hidden", false);
-                                    $("#task-name-field-{{item.id}}").attr("hidden", true);
-                                    $("#task-name-{{item.id}}").text(data["name"]);
-                                });
-                            });
-
-                            $("#reject-edit-task-name-{{item.id}}").click(function(event){
-                                event.preventDefault();
-
-                                buttons = $(this).parent().children();
-                                $(buttons[0]).attr("hidden", false);
-                                $(buttons[1]).attr("hidden", true);
-                                $(buttons[2]).attr("hidden", true);
-                                $("#task-name-{{item.id}}").attr("hidden", false);
-                                $("#task-name-field-{{item.id}}").attr("hidden", true);
-                            });
-
-                            // TODO add task notes and date due ajax reqs
-                            $("#edit-task-notes-{{item.id}}").click(function(event){
-                                event.preventDefault();
-                                let taskNotes = $("#task-notes-{{item.id}}");
-                                let taskNotesField = $("#task-notes-field-{{item.id}}");
-                                buttons = $(this).parent().children();
-                                $(buttons[0]).attr("hidden", true);
-                                $(buttons[1]).attr("hidden", false);
-                                $(buttons[2]).attr("hidden", false);
-                                $("#task-notes-{{item.id}}").attr("hidden", true);
-                                taskNotesField.val(taskNotes.text());
-                                taskNotesField.attr("hidden", false);
-                            });
-
-                            $("#confirm-edit-task-notes-{{item.id}}").click(function(event){
-                                event.preventDefault();
-                                text = $("#task-notes-field-{{item.id}}").val();
-                                $.ajax({
-                                    data: JSON.stringify({
-                                        notes: text
-                                    }),
-                                    type: "PATCH",
-                                    url: "{{url_for('tasklist.edit_task_notes', list_id=tasks.listId, task_id=item.id)}}",
-                                    contentType: "application/json"
-                                }).done(function(data){
-                                    buttons = $("#confirm-edit-task-notes-{{item.id}}").parent().children();
-                                    $(buttons[0]).attr("hidden", false);
-                                    $(buttons[1]).attr("hidden", true);
-                                    $(buttons[2]).attr("hidden", true);
-                                    $("#task-notes-{{item.id}}").attr("hidden", false);
-                                    $("#task-notes-field-{{item.id}}").attr("hidden", true);
-                                    $("#task-notes-{{item.id}}").text(data["notes"]);
-                                });
-                            });
-
-                            $("#reject-edit-task-notes-{{item.id}}").click(function(event){
-                                event.preventDefault();
-
-                                buttons = $(this).parent().children();
-                                $(buttons[0]).attr("hidden", false);
-                                $(buttons[1]).attr("hidden", true);
-                                $(buttons[2]).attr("hidden", true);
-                                $("#task-notes-{{item.id}}").attr("hidden", false);
-                                $("#task-notes-field-{{item.id}}").attr("hidden", true);
-                            });
-
-
-                            // date due
-                            $("#task-date-due-{{item.id}}").change(function(event){
-                                event.preventDefault();
-                                currentVal = $(this).val()
-                                $.ajax({
-                                    data: JSON.stringify({
-                                        date_due: currentVal
-                                    }),
-                                    type: "PATCH",
-                                    url: "{{url_for('tasklist.edit_task_date_due', list_id=tasks.listId, task_id=item.id)}}",
-                                    contentType: "application/json"
-                                }).done(function(data){
-
-                                })
-                            });
-                        });
-                    </script>
                 </li>
                 {% endfor %}
                 {% endif %}
@@ -206,5 +66,157 @@
         <!-- Body end -->
 
         <!-- Footer-->
+        <!-- Bootstrap core JS-->
+        {{ bootstrap.load_js() }}
+        <!-- Custom js/jquery -->
+        <script type="text/javascript">
+            $(document).ready(function(){
+                $(".check-state").change(function(event){
+                    event.preventDefault();
+                    const currentCheck = $(this);
+                    const splitCurrentCheckID = currentCheck.attr("id").split("-");
+                    const currentListID = splitCurrentCheckID[2], currentTaskID = splitCurrentCheckID[3];
+                    let data = {checked: false, taskid: $("#task-id").val()};
+                    if(currentCheck.prop("checked")){
+                        data["checked"] = true;
+                    }
+                    $.ajax({
+                        data: JSON.stringify(data),
+                        type: "PATCH",
+                        contentType: "application/json",
+                        url: `/tasks/${currentListID}/${currentTaskID}/check`
+                    }).done(function(data){
+                        if(data["checked"] === true){
+                            currentCheck.addClass("border-success");
+                            currentCheck.removeClass("border-danger");
+                        }else{
+                            currentCheck.addClass("border-danger");
+                            currentCheck.removeClass("border-success");
+                        }
+                    });
+                });
+
+                $(".edit-name").click(function(event){
+                    event.preventDefault();
+                    const splitCurrentEditButtonID = $(this).attr("id").split("-");
+                    const currentName = $(`#task-name-${splitCurrentEditButtonID[3]}-${splitCurrentEditButtonID[4]}`);
+                    const currentNameField = $(`#task-name-field-${splitCurrentEditButtonID[3]}-${splitCurrentEditButtonID[4]}`);
+                    buttons = $(this).parent().children();
+                    $(buttons[0]).attr("hidden", true);
+                    $(buttons[1]).attr("hidden", false);
+                    $(buttons[2]).attr("hidden", false);
+                    currentNameField.val(currentName.text());
+                    currentName.toggle();
+                    currentNameField.toggle();
+                });
+
+                // TODO handle empty string before ajax
+                $(".confirm-name").click(function(event){
+                    event.preventDefault();
+                    const splitCurrentConfirmButtonID = $(this).attr("id").split("-");
+                    const currentName = $(`#task-name-${splitCurrentConfirmButtonID[4]}-${splitCurrentConfirmButtonID[5]}`);
+                    const currentNameField = $(`#task-name-field-${splitCurrentConfirmButtonID[4]}-${splitCurrentConfirmButtonID[5]}`);
+                    const currentListID = splitCurrentConfirmButtonID[4], currentTaskID = splitCurrentConfirmButtonID[5];
+                    const buttons = $(this).parent().children();
+                    $.ajax({
+                        data: JSON.stringify({
+                            name: currentNameField.val()
+                        }),
+                        type: "PATCH",
+                        contentType: "application/json",
+                        url: `/tasks/${currentListID}/${currentTaskID}/name`
+                    }).done(function(data){
+                        $(buttons[0]).attr("hidden", false);
+                        $(buttons[1]).attr("hidden", true);
+                        $(buttons[2]).attr("hidden", true);
+                        currentName.toggle();
+                        currentNameField.toggle();
+                        currentName.text(data["name"])
+                    });
+                });
+
+                $(".cancel-name").click(function(event){
+                    event.preventDefault();
+                    const splitCurrentCancelButtonID = $(this).attr("id").split("-");
+                    const currentName = $(`#task-name-${splitCurrentCancelButtonID[4]}-${splitCurrentCancelButtonID[5]}`);
+                    const currentNameField = $(`#task-name-field-${splitCurrentCancelButtonID[4]}-${splitCurrentCancelButtonID[5]}`);
+                    buttons = $(this).parent().children();
+                    $(buttons[0]).attr("hidden", false);
+                    $(buttons[1]).attr("hidden", true);
+                    $(buttons[2]).attr("hidden", true);
+                    currentName.toggle();
+                    currentNameField.toggle();
+                });
+
+                $(".edit-notes").click(function(event){
+                    event.preventDefault();
+                    const splitCurrentEditButtonID = $(this).attr("id").split("-");
+                    const currentNotes = $(`#task-notes-${splitCurrentEditButtonID[3]}-${splitCurrentEditButtonID[4]}`);
+                    const currentNotesField = $(`#task-notes-field-${splitCurrentEditButtonID[3]}-${splitCurrentEditButtonID[4]}`);
+                    buttons = $(this).parent().children();
+                    $(buttons[0]).attr("hidden", true);
+                    $(buttons[1]).attr("hidden", false);
+                    $(buttons[2]).attr("hidden", false);
+                    currentNotesField.val(currentNotes.text());
+                    currentNotes.toggle();
+                    currentNotesField.toggle();
+                });
+
+                $(".confirm-notes").click(function(event){
+                    event.preventDefault();
+                    const splitCurrentConfirmButtonID = $(this).attr("id").split("-");
+                    const currentNotes = $(`#task-notes-${splitCurrentConfirmButtonID[4]}-${splitCurrentConfirmButtonID[5]}`);
+                    const currentNotesField = $(`#task-notes-field-${splitCurrentConfirmButtonID[4]}-${splitCurrentConfirmButtonID[5]}`);
+                    const currentListID = splitCurrentConfirmButtonID[4], currentTaskID = splitCurrentConfirmButtonID[5];
+                    const buttons = $(this).parent().children();
+                    $.ajax({
+                        data: JSON.stringify({
+                            notes: currentNotesField.val()
+                        }),
+                        type: "PATCH",
+                        contentType: "application/json",
+                        url: `/tasks/${currentListID}/${currentTaskID}/notes`
+                    }).done(function(data){
+                        $(buttons[0]).attr("hidden", false);
+                        $(buttons[1]).attr("hidden", true);
+                        $(buttons[2]).attr("hidden", true);
+                        currentNotes.toggle();
+                        currentNotesField.toggle();
+                        currentNotes.text(data["notes"])
+                    });
+                });
+
+                $(".cancel-notes").click(function(event){
+                    event.preventDefault();
+                    const splitCurrentCancelButtonID = $(this).attr("id").split("-");
+                    const currentNotes = $(`#task-notes-${splitCurrentCancelButtonID[4]}-${splitCurrentCancelButtonID[5]}`);
+                    const currentNotesField = $(`#task-notes-field-${splitCurrentCancelButtonID[4]}-${splitCurrentCancelButtonID[5]}`);
+                    buttons = $(this).parent().children();
+                    $(buttons[0]).attr("hidden", false);
+                    $(buttons[1]).attr("hidden", true);
+                    $(buttons[2]).attr("hidden", true);
+                    currentNotes.toggle();
+                    currentNotesField.toggle();
+                });
+
+                // TODO errorneous/missing date entry catch
+                $(".date-due-selector").change(function(event){
+                    event.preventDefault();
+                    currentVal = $(this).val();
+                    const splitCurrentDateDueSelectorID = $(this).attr("id").split("-");
+                    const currentListID = splitCurrentDateDueSelectorID[3], currentTaskID = splitCurrentDateDueSelectorID[4];
+                    $.ajax({
+                        data: JSON.stringify({
+                            date_due: currentVal
+                        }),
+                        type: "PATCH",
+                        url: `/tasks/${currentListID}/${currentTaskID}/date-due`,
+                        contentType: "application/json"
+                    }).done(function(data){
+
+                    })
+                });
+            });
+        </script>
     </body>
 </html>

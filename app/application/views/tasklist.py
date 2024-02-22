@@ -58,17 +58,19 @@ def add_task(list_id):
             return render_template("index.html", list_id=list_id, form=todoform, checkbox=checkbox, tasks=tasklist, current_user=current_user, errors=todoform.errors)
 
 
-@tasklist.route("/tasks/<list_id>/<int:task_id>/check", methods=["POST"])
+@tasklist.route("/tasks/<list_id>/<int:task_id>/check", methods=["PATCH"])
 def set_task_check(list_id, task_id):
     db.get_or_404(Task, task_id)
-    if request.method == "POST":
+    if request.method == "PATCH":
         complete_state = request.get_json()
         tasklist = db.session.execute(db.select(TaskList).where(TaskList.listId == list_id)).scalar()
         task = db.session.execute(db.select(Task).where(and_(Task.tasklist == tasklist,
                                                       Task.id == task_id))).scalar()
         task.complete = complete_state.get("checked")
         db.session.commit()
-        return jsonify({"checked":complete_state.get("checked")})
+        return jsonify({"list_id": list_id,
+                        "task_id": task_id,
+                        "checked": complete_state.get("checked")})
 
 
 # TODO response on empty string?
@@ -85,14 +87,14 @@ def edit_task_name(list_id, task_id):
         return jsonify({"name": task.name})
 
 
-@tasklist.route("/tasks/<list_id>/<int:task_id>/title", methods=["PATCH"])
+@tasklist.route("/tasks/<list_id>/<int:task_id>/notes", methods=["PATCH"])
 def edit_task_notes(list_id, task_id):
     if request.method == "PATCH":
         tasklist = db.session.execute(db.select(TaskList).where(TaskList.listId == list_id)).scalar()
         task = db.session.execute(db.select(Task).where(and_(Task.tasklist == tasklist,
                                                              Task.id == task_id))).scalar()
         new_notes = request.get_json().get("notes")
-        task.notes = new_notes
+        task.notes = "" if new_notes == "" else new_notes
         db.session.commit()
         return jsonify({"notes": task.notes})
 
@@ -104,6 +106,7 @@ def edit_task_date_due(list_id, task_id):
         task = db.session.execute(db.select(Task).where(and_(Task.tasklist == tasklist,
                                                              Task.id == task_id))).scalar()
         new_datetime = dt.datetime.strptime(request.get_json().get("date_due"), "%Y-%m-%dT%H:%M")
+        print(new_datetime)
         task.date_due = new_datetime
         db.session.commit()
         return jsonify({"date": task.date_due})

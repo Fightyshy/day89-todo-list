@@ -37,7 +37,7 @@ class Task(db.Model):
     date_set: Mapped[dt.datetime] = mapped_column(DateTime(), default=dt.datetime.now().replace(microsecond=0))
     date_due: Mapped[dt.datetime] = mapped_column(DateTime())
     # category: Mapped[str] = mapped_column(String) Removed due to limitations, for future extension if we can get sorting/filtering in html working using flask
-    notes: Mapped[str] = mapped_column(String)
+    notes: Mapped[str] = mapped_column(String, default="", nullable=True)
     complete: Mapped[bool] = mapped_column(Boolean, default=False)
 
     tasklist_id: Mapped[int] = mapped_column(ForeignKey("tasklist.id"))
