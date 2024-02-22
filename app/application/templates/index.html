@@ -4,33 +4,55 @@
         <!-- Body start -->
         <div class="d-flex flex-column flex-md-row p-4 gap-4 py-md-5 align-items-center justify-content-center">
             {% if tasks is not none %}
-            <div class="list-group w-100">
+            <ul class="list-group w-100">
                 {% for item in tasks.tasks: %}
-                <label class="list-group-item d-flex gap-3">
+                <li class="list-group-item d-flex flex-column align-items-start">
                     <!-- TODO if to ajax to edit recived, turn form from viewing to form editting mode -->
-                    <input hidden="true" value="{{ item.id }}" id="task-id"/>
-                    {% if item.complete %}
-                    <input class="form-check-input flex-shrink-0" type="checkbox" style="font-size: 1.375em;" id="task-checkbox-{{item.id}}" name="task-checkbox-{{item.id}}" checked>
-                    {% else %}
-                    <input class="form-check-input flex-shrink-0" type="checkbox" style="font-size: 1.375em;" id="task-checkbox-{{item.id}}" name="task-checkbox-{{item.id}}">
-                    {% endif %}
-                    <div class="d-flex gap-2 w-100 justify-content-md-between">
-                        <div>
-                            <div id="name">
-                                <h2 id="task-name-{{item.id}}" contenteditable="true" class="mb-0">{{ item.name }}</h2>
+                    <div class="row w-100">
+                        <div class="col-md-auto my-auto mx-2">
+                            {% if item.complete %}
+                            <input class="form-check-input border border-5 border-success" type="checkbox" style="width: 3.12rem; height: 3.12rem;" id="task-checkbox-{{item.id}}" name="task-checkbox-{{item.id}}" checked>
+                            {% else %}
+                            <input class="form-check-input border border-5 border-danger" type="checkbox" style="width: 3.12rem; height: 3.12rem;" id="task-checkbox-{{item.id}}" name="task-checkbox-{{item.id}}">
+                            {% endif %}
+                        </div>
+                        <input hidden="true" value="{{ item.id }}" id="task-id"/>
+                        <div class="col-md-7">
+                            <div class="row mb-2">
+                                <div class="col-md-auto px-0">
+                                    <span id="edit-task-name-{{item.id}}">📝</span>
+                                    <span id="confirm-edit-task-name-{{item.id}}" hidden>✅</span>
+                                    <span id="reject-edit-task-name-{{item.id}}" hidden>❌</span>
+                                </div>
+                                <div class="col-md-11">
+                                    <h2 id="task-name-{{item.id}}" class="mb-0">{{ item.name }}</h2>
+                                    <input id="task-name-field-{{item.id}}" type="text" class="form-control" maxlength="40" hidden/>
+                                </div>
                             </div>
-                            <div id="notes">
-                                <h6 id="task-notes-{{item.id}}" class="mb-0 opacity-75 w-75 text-wrap" contenteditable="true">{{ item.notes }}</h6>
+                            <div class="row">
+                                <div class="col-md-auto px-0">
+                                    <span id="edit-task-notes-{{item.id}}">📝</span>
+                                    <span id="confirm-edit-task-notes-{{item.id}}" hidden>✅</span>
+                                    <span id="reject-edit-task-notes-{{item.id}}" hidden>❌</span>
+                                </div>
+                                <div class="col-md-11">
+                                    <p id="task-notes-{{item.id}}" class="mb-0 opacity-75 text-wrap">{{ item.notes }}</p>
+                                    <textarea id="task-notes-field-{{item.id}}" class="form-control" style="resize: none;" maxlength="200" hidden></textarea>
+                                </div>
                             </div>
                         </div>
-                        <div>
-                            Date Set: <input type="datetime-local" class="form-control" value="{{item.date_set}}" disabled>
-                            Date Due: <input id="task-date-due-{{item.id}}" type="datetime-local" class="form-control" value="{{item.date_due}}">
+                        <div class="col-md-2">
+                            <div class="row px-2">
+                                Date Set: <input type="datetime-local" class="form-control" value="{{item.date_set}}" disabled>
+                            </div>
+                            <div class="row px-2">
+                                Date Due: <input id="task-date-due-{{item.id}}" type="datetime-local" class="form-control" value="{{item.date_due}}">
+                            </div>
                         </div>
-                        <small class="opacity-50 text-nowrap">
+                        <div class="col-md-2 align-items-end">
                             <button id="edit-{{item.id}}"  class="btn btn-primary ml-4">Save</button>
                             <a href="{{ url_for('tasklist.delete_task', list_id=tasks.listId, task_id=item.id) }}" class="btn btn-primary">Delete</a>
-                        </small>
+                        </div>
                     </div>
                     
                     <!-- TODO change edit to convert text to form field and back -->
@@ -38,6 +60,7 @@
                     <script type="text/javascript">
                         $(document).ready(function() {
 
+                            // Task complete state handler
                             $("#task-checkbox-{{item.id}}").change(function(event){
                                 event.preventDefault();
                                 data = {checked: false, taskid: $("#task-id").val()}
@@ -51,70 +74,134 @@
                                     contentType: "application/json",
                                     url: "{{url_for('tasklist.set_task_check', list_id=tasks.listId, task_id=item.id)}}"
                                 }).done(function(data) {
-                                    $("#test").text("Box checked").show();
+                                    if(data["checked"] === true){
+                                        $("#task-checkbox-{{item.id}}").addClass("border-success");
+                                        $("#task-checkbox-{{item.id}}").removeClass("border-danger");
+                                    }else{
+                                        $("#task-checkbox-{{item.id}}").removeClass("border-success");
+                                        $("#task-checkbox-{{item.id}}").addClass("border-danger");
+                                    }
                                 })
-                            })
+                            });
+
+                            $("#edit-task-name-{{item.id}}").click(function(event){
+                                event.preventDefault();
+                                let taskName = $("#task-name-{{item.id}}");
+                                let taskNameField = $("#task-name-field-{{item.id}}");
+                                buttons = $(this).parent().children();
+                                $(buttons[0]).attr("hidden", true);
+                                $(buttons[1]).attr("hidden", false);
+                                $(buttons[2]).attr("hidden", false);
+                                $("#task-name-{{item.id}}").attr("hidden", true);
+                                taskNameField.val(taskName.text());
+                                taskNameField.attr("hidden", false);
+                            });
+
+                            // TODO handle empty string before ajax
+                            $("#confirm-edit-task-name-{{item.id}}").click(function(event){
+                                event.preventDefault();
+                                text = $("#task-name-field-{{item.id}}").val();
+                                $.ajax({
+                                    data: JSON.stringify({
+                                        name: text
+                                    }),
+                                    type: "PATCH",
+                                    url: "{{url_for('tasklist.edit_task_name', list_id=tasks.listId, task_id=item.id)}}",
+                                    contentType: "application/json"
+                                }).done(function(data){
+                                    buttons = $("#confirm-edit-task-name-{{item.id}}").parent().children();
+                                    $(buttons[0]).attr("hidden", false);
+                                    $(buttons[1]).attr("hidden", true);
+                                    $(buttons[2]).attr("hidden", true);
+                                    $("#task-name-{{item.id}}").attr("hidden", false);
+                                    $("#task-name-field-{{item.id}}").attr("hidden", true);
+                                    $("#task-name-{{item.id}}").text(data["name"]);
+                                });
+                            });
+
+                            $("#reject-edit-task-name-{{item.id}}").click(function(event){
+                                event.preventDefault();
+
+                                buttons = $(this).parent().children();
+                                $(buttons[0]).attr("hidden", false);
+                                $(buttons[1]).attr("hidden", true);
+                                $(buttons[2]).attr("hidden", true);
+                                $("#task-name-{{item.id}}").attr("hidden", false);
+                                $("#task-name-field-{{item.id}}").attr("hidden", true);
+                            });
+
+                            // TODO add task notes and date due ajax reqs
+                            $("#edit-task-notes-{{item.id}}").click(function(event){
+                                event.preventDefault();
+                                let taskNotes = $("#task-notes-{{item.id}}");
+                                let taskNotesField = $("#task-notes-field-{{item.id}}");
+                                buttons = $(this).parent().children();
+                                $(buttons[0]).attr("hidden", true);
+                                $(buttons[1]).attr("hidden", false);
+                                $(buttons[2]).attr("hidden", false);
+                                $("#task-notes-{{item.id}}").attr("hidden", true);
+                                taskNotesField.val(taskNotes.text());
+                                taskNotesField.attr("hidden", false);
+                            });
+
+                            $("#confirm-edit-task-notes-{{item.id}}").click(function(event){
+                                event.preventDefault();
+                                text = $("#task-notes-field-{{item.id}}").val();
+                                $.ajax({
+                                    data: JSON.stringify({
+                                        notes: text
+                                    }),
+                                    type: "PATCH",
+                                    url: "{{url_for('tasklist.edit_task_notes', list_id=tasks.listId, task_id=item.id)}}",
+                                    contentType: "application/json"
+                                }).done(function(data){
+                                    buttons = $("#confirm-edit-task-notes-{{item.id}}").parent().children();
+                                    $(buttons[0]).attr("hidden", false);
+                                    $(buttons[1]).attr("hidden", true);
+                                    $(buttons[2]).attr("hidden", true);
+                                    $("#task-notes-{{item.id}}").attr("hidden", false);
+                                    $("#task-notes-field-{{item.id}}").attr("hidden", true);
+                                    $("#task-notes-{{item.id}}").text(data["notes"]);
+                                });
+                            });
+
+                            $("#reject-edit-task-notes-{{item.id}}").click(function(event){
+                                event.preventDefault();
+
+                                buttons = $(this).parent().children();
+                                $(buttons[0]).attr("hidden", false);
+                                $(buttons[1]).attr("hidden", true);
+                                $(buttons[2]).attr("hidden", true);
+                                $("#task-notes-{{item.id}}").attr("hidden", false);
+                                $("#task-notes-field-{{item.id}}").attr("hidden", true);
+                            });
+
+
+                            // date due
+                            $("#task-date-due-{{item.id}}").change(function(event){
+                                event.preventDefault();
+                                currentVal = $(this).val()
+                                $.ajax({
+                                    data: JSON.stringify({
+                                        date_due: currentVal
+                                    }),
+                                    type: "PATCH",
+                                    url: "{{url_for('tasklist.edit_task_date_due', list_id=tasks.listId, task_id=item.id)}}",
+                                    contentType: "application/json"
+                                }).done(function(data){
+
+                                })
+                            });
                         });
-                        // $(document).ready(function() {
-                        //     $("#task-checkbox-{{item.id}}").change(function(event) {
-                        //         if(this.checked){
-                        //             $.ajax({
-                        //                 data:{
-                        //                     checked: true,
-                        //                     taskid: $("#task-id").val()
-                        //                 },
-                        //                 type: "POST",
-                        //                 url:"/{{tasks.listId}}"
-                        //             }).done(function(data){
-                        //                 $("#test").text("Box checked").show()
-                        //             })
-                        //             event.preventDefault()
-                        //         }else{
-                        //             $.ajax({
-                        //                 data:{
-                        //                     checked: false,
-                        //                     taskid: $("#item-id").val()
-                        //                 },
-                        //                 type: "POST",
-                        //                 url:"/{{tasks.listId}}"
-                        //             }).done(function(data){
-                        //                 $("#test").text("Box unchecked").show()
-                        //             })
-                        //             event.preventDefault()
-                        //         }
-                        //     })
-                        // })
-                        
-                        // // Edit contents
-                        // $(document).ready(function() {
-                        //     $("#edit-{{item.id}}").click(function(event){
-                        //         console.log("{{item.id}}")
-                        //         $.ajax({
-                        //             data:{
-                        //                 id: "{{item.id}}",
-                        //                 name: $("#task-name-{{item.id}}").text(),
-                        //                 notes: $("#task-notes-{{item.id}}").text(),
-                        //                 datedue: $("#task-date-due-{{item.id}}").val()
-                        //             },
-                        //             type: "POST",
-                        //             url: "/task/{{item.id}}"
-                        //         }).done(function(data){
-                        //             $("#task-name-{{item.id}}").text(data.name),
-                        //             $("#task-notes-{{item.id}}").text(data.notes),
-                        //             $("#task-date-due-{{item.id}}").val(data.datedue)
-                        //         })
-                        //         event.preventDefault()
-                        //     })
-                        // })
                     </script>
-                </label>
+                </li>
                 {% endfor %}
                 {% endif %}
                 <!-- Form here, set id for ajax -->
                 <div class="list-group-item d-flex gap-3 bg-body-tertiary">
                     {{ render_form(form, action=url_for('tasklist.add_task', list_id=list_id), form_type="inline", novalidate=True) }}
                 </div>
-            </div>
+            </ul>
         </div>
         <!-- Body end -->
 

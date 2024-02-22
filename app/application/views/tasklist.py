@@ -68,26 +68,45 @@ def set_task_check(list_id, task_id):
                                                       Task.id == task_id))).scalar()
         task.complete = complete_state.get("checked")
         db.session.commit()
-        return ""
+        return jsonify({"checked":complete_state.get("checked")})
 
-# TODO fix
-@tasklist.route("/task/<int:task_id>", methods=["POST"])
-def edit_task(task_id):
-    db.get_or_404(Task, task_id)
-    if request.method == "POST":
-        to_edit = db.get_or_404(Task, request.form["id"])
-        to_edit.name = request.form["name"]
-        to_edit.notes = request.form["notes"]
-        to_edit.date_due = dt.datetime.strptime(request.form["datedue"], "%Y-%m-%d").date()
+
+# TODO response on empty string?
+# TODO edit task date due
+@tasklist.route("/tasks/<list_id>/<int:task_id>/name", methods=["PATCH"])
+def edit_task_name(list_id, task_id):
+    if request.method == "PATCH":
+        tasklist = db.session.execute(db.select(TaskList).where(TaskList.listId == list_id)).scalar()
+        task = db.session.execute(db.select(Task).where(and_(Task.tasklist == tasklist,
+                                                             Task.id == task_id))).scalar()
+        new_name = request.get_json().get("name")
+        task.name = new_name
         db.session.commit()
-        # Respond to ajax request
-        # Ensure .done overrides once saved
-        return jsonify({
-            "name": to_edit.name,
-            "notes": to_edit.notes,
-            "datedue": to_edit.date_due
-        })
-    return ""
+        return jsonify({"name": task.name})
+
+
+@tasklist.route("/tasks/<list_id>/<int:task_id>/title", methods=["PATCH"])
+def edit_task_notes(list_id, task_id):
+    if request.method == "PATCH":
+        tasklist = db.session.execute(db.select(TaskList).where(TaskList.listId == list_id)).scalar()
+        task = db.session.execute(db.select(Task).where(and_(Task.tasklist == tasklist,
+                                                             Task.id == task_id))).scalar()
+        new_notes = request.get_json().get("notes")
+        task.notes = new_notes
+        db.session.commit()
+        return jsonify({"notes": task.notes})
+
+
+@tasklist.route("/tasks/<list_id>/<int:task_id>/date-due", methods=["PATCH"])
+def edit_task_date_due(list_id, task_id):
+    if request.method == "PATCH":
+        tasklist = db.session.execute(db.select(TaskList).where(TaskList.listId == list_id)).scalar()
+        task = db.session.execute(db.select(Task).where(and_(Task.tasklist == tasklist,
+                                                             Task.id == task_id))).scalar()
+        new_datetime = dt.datetime.strptime(request.get_json().get("date_due"), "%Y-%m-%dT%H:%M")
+        task.date_due = new_datetime
+        db.session.commit()
+        return jsonify({"date": task.date_due})
 
 
 @tasklist.route("/tasks/<list_id>/<int:task_id>")
