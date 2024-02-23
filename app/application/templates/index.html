@@ -217,16 +217,30 @@
                     currentVal = $(this).val();
                     const splitCurrentDateDueSelectorID = $(this).attr("id").split("-");
                     const currentListID = splitCurrentDateDueSelectorID[3], currentTaskID = splitCurrentDateDueSelectorID[4];
-                    $.ajax({
-                        data: JSON.stringify({
-                            date_due: currentVal
-                        }),
-                        type: "PATCH",
-                        url: `/tasks/${currentListID}/${currentTaskID}/date-due`,
-                        contentType: "application/json"
-                    }).done(function(data){
-
-                    })
+                    const currentDateDueField = $(this);
+                    // Workaround
+                    if(document.getElementById(currentDateDueField.attr("id")).validity.badInput){
+                        currentDateDueField.addClass("is-invalid");
+                        alert("The date due is missing a entry, please make sure all date information is put in");
+                        event.stopImmediatePropagation();
+                    }else{
+                        currentDateDueField.addClass("is-valid");
+                        currentDateDueField.removeClass("is-invalid");
+                        currentDateDueField.prop("disabled", true);
+                        setTimeout(function(){
+                            $.ajax({
+                                data: JSON.stringify({
+                                    date_due: currentVal
+                                }),
+                                type: "PATCH",
+                                url: `/tasks/${currentListID}/${currentTaskID}/date-due`,
+                                contentType: "application/json"
+                            }).done(function(data){
+                                currentDateDueField.removeClass("is-valid");
+                                currentDateDueField.prop("disabled", false);
+                            });
+                        }, 1000);
+                    }
                 });
             });
         </script>
