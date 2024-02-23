@@ -39,7 +39,7 @@ def register_user():
             new_user = User(
                 username=registerform.username.data,
                 email=registerform.email.data,
-                password=registerform.password.data
+                password=hashed_password
             )
             # Retrieve current anonymous tasklist or generate new tasklist 
             tasks = db.session.execute(db.select(TaskList).where(TaskList.listId == request.args.get("tasklist"))).scalar()
