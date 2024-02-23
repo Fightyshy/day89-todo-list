@@ -73,8 +73,6 @@ def set_task_check(list_id, task_id):
                         "checked": complete_state.get("checked")})
 
 
-# TODO response on empty string?
-# TODO edit task date due
 @tasklist.route("/tasks/<list_id>/<int:task_id>/name", methods=["PATCH"])
 def edit_task_name(list_id, task_id):
     if request.method == "PATCH":

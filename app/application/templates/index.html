@@ -109,8 +109,6 @@
                     currentNameField.toggle();
                 });
 
-                // TODO handle empty string before ajax
-                // TODO recieve and process 400 bad request for validation errors
                 $(".confirm-name").click(function(event){
                     event.preventDefault();
                     const splitCurrentConfirmButtonID = $(this).attr("id").split("-");
@@ -211,7 +209,6 @@
                     currentNotesField.toggle();
                 });
 
-                // TODO errorneous/missing date entry catch
                 $(".date-due-selector").change(function(event){
                     event.preventDefault();
                     currentVal = $(this).val();
