@@ -50,7 +50,6 @@
                             </div>
                         </div>
                         <div class="col-md-2 align-items-end">
-                            <button id="edit-{{item.id}}"  class="btn btn-primary ml-4">Save</button>
                             <a href="{{ url_for('tasklist.delete_task', list_id=tasks.listId, task_id=item.id) }}" class="btn btn-primary">Delete</a>
                         </div>
                     </div>
@@ -111,6 +110,7 @@
                 });
 
                 // TODO handle empty string before ajax
+                // TODO recieve and process 400 bad request for validation errors
                 $(".confirm-name").click(function(event){
                     event.preventDefault();
                     const splitCurrentConfirmButtonID = $(this).attr("id").split("-");
@@ -118,21 +118,33 @@
                     const currentNameField = $(`#task-name-field-${splitCurrentConfirmButtonID[4]}-${splitCurrentConfirmButtonID[5]}`);
                     const currentListID = splitCurrentConfirmButtonID[4], currentTaskID = splitCurrentConfirmButtonID[5];
                     const buttons = $(this).parent().children();
-                    $.ajax({
-                        data: JSON.stringify({
-                            name: currentNameField.val()
-                        }),
-                        type: "PATCH",
-                        contentType: "application/json",
-                        url: `/tasks/${currentListID}/${currentTaskID}/name`
-                    }).done(function(data){
-                        $(buttons[0]).attr("hidden", false);
-                        $(buttons[1]).attr("hidden", true);
-                        $(buttons[2]).attr("hidden", true);
-                        currentName.toggle();
-                        currentNameField.toggle();
-                        currentName.text(data["name"])
-                    });
+
+                    if(currentNameField.val() === ""){
+                        currentNameField.addClass("is-invalid");
+                        alert("You can't leave a task's name empty!");
+                        event.stopImmediatePropagation();
+                    }else{
+                        currentNameField.addClass("is-valid");
+                        currentNameField.removeClass("is-invalid");
+                        setTimeout(function(){
+                            $.ajax({
+                                data: JSON.stringify({
+                                    name: currentNameField.val()
+                                }),
+                                type: "PATCH",
+                                contentType: "application/json",
+                                url: `/tasks/${currentListID}/${currentTaskID}/name`
+                            }).done(function(data){
+                                $(buttons[0]).attr("hidden", false);
+                                $(buttons[1]).attr("hidden", true);
+                                $(buttons[2]).attr("hidden", true);
+                                currentName.toggle();
+                                currentNameField.toggle();
+                                currentName.text(data["name"])
+                            });
+                        }, 1000);
+                    }
+
                 });
 
                 $(".cancel-name").click(function(event){
